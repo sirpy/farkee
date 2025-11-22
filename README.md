@@ -1,5 +1,6 @@
 # TODO
 
+
 ## Backend
 - Should have Private key + Gas
 ### User join
@@ -35,8 +36,8 @@
 - Earning reports
   
 ## Smart contract
-Buy (permissionless)
-Done (only admin)
+https://celoscan.io//address/0xff1dd185a7b6463ac94dF0f92F279774B43DcD8c#readContract
+
 
 
 
