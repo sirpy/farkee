@@ -1,3 +1,45 @@
+# TODO
+
+## Backend
+- Should have Private key + Gas
+### User join
+- Input: fid
+- [ ] generate deterministic private key from seed=SECRET+fid
+- [ ] Returns and generate signer request to farcaster
+
+### Create a cast for fid
+- Inputs: txhash, text, signed text by payer wallet
+- [ ] Verifies the text matches the texthash in contract
+- [ ] Verifies that the last event for this FID was done by paying wallet and wasnt done yet
+- [ ] Post cast
+- [ ] Modifies state of smart contract record to done
+
+## Miniapp
+
+### User join
+- [ ] Set ad price
+- [ ] check add types (roast, shill etc...)
+- [ ] Send signer request to backend
+- [ ] Ask user to complete signer request (qr code)
+- [ ] poll for signing request status
+- [ ] Once request is signed user executes on chain tx to write price+fid+types to a smart contract
+
+### See list of ad spaces
+- [ ] List of profiles + ad price + supported ad types
+- [ ] Buy buttons per profile (roast cost X, shill cost Z)
+- [ ] do an erc677 tx using G$ to smart contract - encoded function call: buy(fid,type,texthash)
+- [ ] once tx is success: send backend signed request with text of cast
+
+## Nice to have
+- Page with recent posts
+- Earning reports
+  
+## Smart contract
+Buy (permissionless)
+Done (only admin)
+
+
+
 # my-celo-app
 
 A new Celo blockchain project
