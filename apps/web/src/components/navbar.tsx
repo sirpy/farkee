@@ -15,6 +15,7 @@ import {
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Docs", href: "https://docs.celo.org", external: true },
+  { name: "Start Earning", href: "/start-earning" },
 ]
 
 export function Navbar() {

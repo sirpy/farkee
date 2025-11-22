@@ -1,0 +1,15 @@
+{
+  "frame": {
+    "name": "Farkee",
+    "version": "1",
+    "iconUrl": "https://barnacle-tops-surely.ngrok-free.app/icon.png",
+    "homeUrl": "https://barnacle-tops-surely.ngrok-free.app",
+    "imageUrl": "https://barnacle-tops-surely.ngrok-free.app/image.png",
+    "splashImageUrl": "https://barnacle-tops-surely.ngrok-free.app/splash.png",
+    "splashBackgroundColor": "#6200AA",
+    "webhookUrl": "https://barnacle-tops-surely.ngrok-free.app/api/webhook",
+    "subtitle": "Monetization that doesn't suck",
+    "description": "monetize your feed and channels",
+    "primaryCategory": "news-media"
+  }
+}
