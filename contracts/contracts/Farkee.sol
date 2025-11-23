@@ -32,6 +32,7 @@ contract Farkee {
     }
 
     mapping(uint => Space) public spaceOwners;
+    mapping(uint => bool) public nonces;
 
     address public admin;
     address public paymentToken;
@@ -77,5 +78,15 @@ contract Farkee {
         for (uint i = 0; i < spaces.length; i++) {
             allSpaces[i] = spaceOwners[spaces[i]];
         }
+    }
+
+    function markExecuted(uint _nonce) external {
+        require(msg.sender == admin, "Only admin can mark executed");
+        nonces[_nonce] = true;
+    }
+
+    function setAdmin(address _admin) external {
+        require(msg.sender == admin, "Only admin");
+        admin = _admin;
     }
 }

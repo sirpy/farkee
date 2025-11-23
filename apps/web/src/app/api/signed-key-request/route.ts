@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { mnemonicToAccount } from "viem/accounts"
-import * as ed from "@noble/ed25519"
+import { getAppEd25519SignerPublicAddress, getAppFidSigner, getSponsorSigner } from "@/lib/signers"
 
 const SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN = {
     name: "Farcaster SignedKeyRequestValidator",
@@ -17,19 +17,19 @@ const SIGNED_KEY_REQUEST_TYPE = [
 
 export async function POST(req: Request) {
     try {
+        
         const APP_FID = process.env.APP_FID
-        const APP_MNEMONIC = process.env.APP_MNEMONIC
 
-        if (!APP_FID || !APP_MNEMONIC) {
-            return NextResponse.json({ error: "APP_FID or APP_MNEMONIC not configured" }, { status: 500 })
+        if (!APP_FID) {
+            return NextResponse.json({ error: "APP_FID not configured" }, { status: 500 })
         }
 
-        const { secretKey, publicKey } = await ed.keygenAsync();
+        const sponsor = getSponsorSigner()
+        const account = getAppFidSigner()
 
-        const key = "0x" + Buffer.from(publicKey).toString("hex") as `0x${string}`;
-        console.log("Generated keypair", { secretKey, publicKey, key })
-        const account = mnemonicToAccount(APP_MNEMONIC)
-
+        //this should be a secret account from oasis network
+        const key = getAppEd25519SignerPublicAddress()
+        
         const until = new Date().setFullYear(new Date().getFullYear() + 1)
 
         const signature = await account.signTypedData({
@@ -45,9 +45,10 @@ export async function POST(req: Request) {
             },
         })
 
-        const sponsorSignature = await account.signMessage({
+        const sponsorSignature = await sponsor.signMessage({
             message: { raw: signature },
         });
+
         // forward to Farcaster client API
         const farcasterRes = await fetch("https://api.farcaster.xyz/v2/signed-key-requests", {
             method: "POST",

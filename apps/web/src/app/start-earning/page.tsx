@@ -113,7 +113,7 @@ export default function StartEarningPage() {
             {isMobile ? (
               <div className="space-y-2">
                 <div className="text-xs break-all">{deeplink}</div>
-                <div className="text-sm text-muted-foreground">If the Farcaster app didn't open automatically, tap below:</div>
+                <div className="text-sm text-muted-foreground">If the Farcaster app didn&apos;t open automatically, tap below:</div>
                 <a
                   href={deeplink}
                   className="inline-block px-3 py-1 rounded bg-primary text-white"

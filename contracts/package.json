@@ -16,8 +16,5 @@
     "hardhat": "^3.0.15",
     "mocha": "^11.0.0",
     "typescript": "~5.8.0"
-  },
-  "dependencies": {
-    "@chainlink/env-enc": "^1.0.5"
   }
 }
