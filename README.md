@@ -20,7 +20,7 @@
 ### User join
 - [ ] Input for ad price
 - [ ] Input for ad type (roast, shill etc...)
-- [ ] Send signer request to backend with ad price + ad type + user fid
+- [ ] Send signer request to backend with ad price + ad type + user fid + userWalletAddress
 - [ ] Ask user to complete signer request (qr code)
 - [ ] poll for signing request status
 - [ ] Once request is signed show success to user
@@ -32,7 +32,7 @@
 - [ ] on buy:
       - [ ] ask user for ad text 
       - [ ] do an erc677 tx using G$ to smart contract - encoded function call: buy(fid,type,texthash)
-      - [ ] once tx is success: send backend (/api/cast) signed request with text of cast
+      - [ ] once tx is success: send backend (/api/cast) signed request with text+txHash
 
 ## Nice to have
 - Page with recent posts

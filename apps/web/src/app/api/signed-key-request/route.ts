@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { mnemonicToAccount } from "viem/accounts"
 import { getAppEd25519SignerPublicAddress, getAppFidSigner, getSponsorSigner } from "@/lib/signers"
+import { celo } from "viem/chains"
+import { createWalletClient, http } from "viem"
+import { parseEther } from "viem";
 
 const SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN = {
     name: "Farcaster SignedKeyRequestValidator",
@@ -15,6 +18,35 @@ const SIGNED_KEY_REQUEST_TYPE = [
     { name: "deadline", type: "uint256" },
 ] as const
 
+// 2. Choose chain (mainnet or alfajores)
+const chain = celo // or celo
+const sponsor = getSponsorSigner()
+
+// 3. Create wallet client
+const walletClient = createWalletClient({
+    account:sponsor,
+    chain,
+    transport: http(),
+})
+
+// Add FARKEE contract address and minimal registerSpace ABI
+const FARKEE_CONTRACT = process.env.FARKEE_CONTRACT || process.env.NEXT_PUBLIC_FARKEE_CONTRACT || ""
+
+const REGISTER_SPACE_ABI = [
+    {
+        name: "registerSpace",
+        type: "function",
+        stateMutability: "nonpayable",
+        inputs: [
+            { name: "fid", type: "uint256" },
+            { name: "owner", type: "address" },
+            { name: "price", type: "uint256" },
+            { name: "spaceType", type: "uint8" },
+        ],
+        outputs: [],
+    },
+] as const
+
 export async function POST(req: Request) {
     try {
         
@@ -23,6 +55,8 @@ export async function POST(req: Request) {
         if (!APP_FID) {
             return NextResponse.json({ error: "APP_FID not configured" }, { status: 500 })
         }
+
+        const { price, adType, fid, userWallet } = await req.json()
 
         const sponsor = getSponsorSigner()
         const account = getAppFidSigner()
@@ -63,11 +97,34 @@ export async function POST(req: Request) {
         })
 
         const json = await farcasterRes.json()
+        
+        
         if (!farcasterRes.ok) {
             return NextResponse.json({ error: json?.error || "farcaster api error", detail: json }, { status: 502 })
         }
 
-        return NextResponse.json(json)
+        // -- New: call on-chain registerSpace using the server wallet client
+        let registerTxHash: string | undefined = undefined
+        try {
+            if (FARKEE_CONTRACT) {
+                // price is a decimal string (like "0.1")
+                const priceArg = parseEther(price.toString())
+
+                registerTxHash = await walletClient.writeContract({
+                    address: FARKEE_CONTRACT as `0x${string}`,
+                    abi: REGISTER_SPACE_ABI,
+                    functionName: "registerSpace",
+                    args: [BigInt(fid), userWallet as `0x${string}`, priceArg as any, Number(adType)],
+                })
+            }
+        } catch (contractErr) {
+            console.error("registerSpace on-chain failed:", contractErr)
+            // continue — we still return the farcaster response, but include the contract error detail
+            return NextResponse.json({ farcaster: json, registerError: String(contractErr) })
+        }
+
+        // Return farcaster response and tx hash (if any)
+        return NextResponse.json({ farcaster: json, registerTx: registerTxHash })
     } catch (err) {
         console.error(err)
         return NextResponse.json({ error: String(err) }, { status: 500 })

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { createWalletClient, createPublicClient, http, keccak256, decodeEventLog, parseAbiItem, parseAbi } from 'viem'
-import { privateKeyToAccount } from "viem/accounts"
 import { celo } from 'viem/chains'
 import {
     makeCastAdd,
@@ -8,8 +7,6 @@ import {
     NobleEd25519Signer,
 } from "@farcaster/hub-nodejs";
 import { CastType, Message } from "@farcaster/core";  // for encoding
-import { de } from "zod/v4/locales";
-import { get } from "http";
 import { getAppEd25519Signer, getSponsorSigner } from "@/lib/signers";
 
 const HUB_URL = "https://hub.pinata.cloud";  // or another Farcaster Hub

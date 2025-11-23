@@ -19,16 +19,11 @@ contract Farkee {
         uint nonce
     );
 
-    event RegisterSpace(
-        address owner,
-        uint fid,
-        uint[] prices,
-        uint8[] spaceTypes
-    );
+    event RegisterSpace(address owner, uint fid, uint price, uint8 spaceType);
     struct Space {
         address owner;
-        uint256[] prices;
-        uint8[] spaceTypes;
+        uint256 price;
+        uint8 spaceType;
     }
 
     mapping(uint => Space) public spaceOwners;
@@ -55,7 +50,7 @@ contract Farkee {
         require(msg.sender == paymentToken, "Unauthorized token contract");
         Space memory space = spaceOwners[fid];
         require(space.owner != address(0), "Space not registered");
-        require(amount >= space.prices[spaceType], "Insufficient payment");
+        require(amount >= space.price, "Insufficient payment");
         (textHash, fid, spaceType) = abi.decode(data, (bytes32, uint, uint8));
         ERC20(paymentToken).transferFrom(address(this), space.owner, amount);
         emit BuySpace(sender, amount, textHash, fid, spaceType, nonce++);
@@ -64,13 +59,12 @@ contract Farkee {
     function registerSpace(
         uint fid,
         address owner,
-        uint[] calldata prices,
-        uint8[] calldata spaceTypes
+        uint price,
+        uint8 spaceType
     ) external {
-        require(msg.sender == admin, "Only admin can register spaces");
-        spaceOwners[fid] = Space(owner, prices, spaceTypes);
+        spaceOwners[fid] = Space(owner, price, spaceType);
         spaces.push(fid);
-        emit RegisterSpace(owner, fid, prices, spaceTypes);
+        emit RegisterSpace(owner, fid, price, spaceType);
     }
 
     function getSpaces() external view returns (Space[] memory allSpaces) {
