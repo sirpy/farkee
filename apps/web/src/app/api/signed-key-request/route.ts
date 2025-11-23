@@ -30,7 +30,7 @@ export async function POST(req: Request) {
         //this should be a secret account from oasis network
         const key = getAppEd25519SignerPublicAddress()
         
-        const until = new Date().setFullYear(new Date().getFullYear() + 1)
+        const until = Date.now() + 24 * 60 * 60 * 1000 // 24 hours
 
         const signature = await account.signTypedData({
             domain: SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN,
