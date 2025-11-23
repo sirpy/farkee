@@ -29,13 +29,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing environment variables', missing }, { status: 500 })
         }
 
-        const APP_FID = process.env.APP_FID as string
+        // allow optional overrides from request body for testing (requestFid, key)
+        const body = await req.json().catch(() => ({}))
+        const requestFid = body?.requestFid ? Number(body.requestFid) : Number(process.env.APP_FID)
+        const key = body?.key || getAppEd25519SignerPublicAddress()
+
+        if (!requestFid) {
+            return NextResponse.json({ error: 'APP_FID not configured (and no requestFid provided)' }, { status: 500 })
+        }
 
         const sponsor = getSponsorSigner()
         const account = getAppFidSigner()
-
-        // this should be a secret account from oasis network
-        const key = getAppEd25519SignerPublicAddress()
         
         const until = Date.now() + 24 * 60 * 60 * 1000 // 24 hours
 
@@ -46,7 +50,7 @@ export async function POST(req: Request) {
             },
             primaryType: "SignedKeyRequest",
             message: {
-                requestFid: BigInt(APP_FID),
+                requestFid: BigInt(requestFid),
                 key,
                 deadline: BigInt(until),
             },
@@ -62,10 +66,10 @@ export async function POST(req: Request) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 key,
-                requestFid: Number(APP_FID),
+                requestFid: Number(requestFid),
                 signature,
                 deadline: until,
-                sponsorship: {sponsorFid: Number(APP_FID), signature: sponsorSignature},
+                sponsorship: { sponsorFid: Number(requestFid), signature: sponsorSignature },
             }),
         })
 

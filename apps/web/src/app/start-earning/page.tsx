@@ -29,6 +29,33 @@ export default function StartEarningPage() {
   const context = useMiniApp()
   const [signedRequest, setSignedRequest] = useState<any | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  
+  const [types, setTypes] = useState<Array<{ id: string; name: string; price: string; policy: string }>>([])
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('farkee_commission_types')
+      if (raw) setTypes(JSON.parse(raw))
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('farkee_commission_types', JSON.stringify(types))
+    } catch {
+      // ignore
+    }
+  }, [types])
+
+  const addType = () => {
+    setTypes((t) => [...t, { id: String(Date.now()), name: 'Roast Me', price: '5 G$', policy: 'No personal info; fun roasts only' }])
+  }
+  const updateType = (id: string, patch: Partial<{ name: string; price: string; policy: string }>) => {
+    setTypes((t) => t.map((x) => (x.id === id ? { ...x, ...patch } : x)))
+  }
+  const removeType = (id: string) => setTypes((t) => t.filter((x) => x.id !== id))
 
   console.log({context})
   useEffect(() => {
@@ -43,11 +70,10 @@ export default function StartEarningPage() {
     setLoading(true)
     setErrorMsg(null)
     try {
-
-      // send public key to our server api which will sign the EIP-712 payload and call Farcaster API
+      // call the server to create a signed key request
       const res = await fetch("/api/signed-key-request", {
         method: "POST",
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json?.error || "Failed creating signed key request")
@@ -134,9 +160,39 @@ export default function StartEarningPage() {
         <p className="mb-4 text-muted-foreground">Create a Farcaster signer so your app can post on behalf of the user.</p>
 
         <div className="space-y-4">
-          <Button onClick={createSignedKeyRequest} disabled={loading}>
-            {loading ? 'Creating...' : 'Create Signer Request'}
-          </Button>
+          <div className="p-4 border rounded">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-sm font-semibold">Commission Types</h3>
+                <div className="text-xs text-muted-foreground">Define the slots you want to sell (name, price, policy).</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => { setTypes([]); localStorage.removeItem('farkee_commission_types') }}>Reset</Button>
+                <Button size="sm" onClick={addType}>Add Type</Button>
+              </div>
+            </div>
+
+            {types.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No commission types defined. Click "Add Type" to create one.</div>
+            ) : (
+              <div className="space-y-3">
+                {types.map((t) => (
+                  <div key={t.id} className="grid gap-2 md:grid-cols-3 items-start">
+                    <input className="w-full border px-2 py-1 rounded" value={t.name} onChange={(e) => updateType(t.id, { name: e.target.value })} />
+                    <input className="w-full border px-2 py-1 rounded" value={t.price} onChange={(e) => updateType(t.id, { price: e.target.value })} />
+                    <div className="flex items-center gap-2">
+                      <input className="w-full border px-2 py-1 rounded" value={t.policy} onChange={(e) => updateType(t.id, { policy: e.target.value })} />
+                      <button className="text-sm text-red-600" onClick={() => removeType(t.id)}>Remove</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-4">
+              <Button onClick={createSignedKeyRequest} disabled={loading}>{loading ? 'Creating...' : 'Create Signer Request'}</Button>
+            </div>
+          </div>
 
           {errorMsg && (
             <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">{errorMsg}</div>
