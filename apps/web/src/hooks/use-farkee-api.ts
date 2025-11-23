@@ -15,6 +15,7 @@ const FARKEE_ABI = [
             {
                 type: "tuple[]",
                 components: [
+                    { name: "fid", type: "uint256" },
                     { name: "owner", type: "address" },
                     { name: "price", type: "uint256" },
                     { name: "spaceType", type: "uint8" },
@@ -40,8 +41,8 @@ const ERC20_ABI = [
     },
 ] as const
 
-type RawSpace = { owner: string; price: bigint; spaceType: number }
-type Space = { owner: string; price: string; spaceType: number }
+type RawSpace = { fid: bigint, owner: string; price: bigint; spaceType: number }
+type Space = { fid: string, owner: string; price: string; spaceType: number }
 
 
 const ROFL_HOST = process.env.NEXT_PUBLIC_ROFL_HOST || ""
@@ -79,6 +80,7 @@ const getAdSpaces = async (): Promise<Space[]> => {
 
     // Normalize BigInt prices to strings for easier JSON consumption
     return raw.map((s) => ({
+        fid: s.fid.toString(),
         owner: s.owner,
         price: formatEther(s.price),
         spaceType: Number(s.spaceType),

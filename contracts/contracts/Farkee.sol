@@ -21,6 +21,7 @@ contract Farkee {
 
     event RegisterSpace(address owner, uint fid, uint price, uint8 spaceType);
     struct Space {
+        uint fid;
         address owner;
         uint256 price;
         uint8 spaceType;
@@ -62,8 +63,9 @@ contract Farkee {
         uint price,
         uint8 spaceType
     ) external {
-        spaceOwners[fid] = Space(owner, price, spaceType);
-        spaces.push(fid);
+        bool exists = spaceOwners[fid].owner != address(0);
+        spaceOwners[fid] = Space(fid, owner, price, spaceType);
+        if (!exists) spaces.push(fid);
         emit RegisterSpace(owner, fid, price, spaceType);
     }
 
