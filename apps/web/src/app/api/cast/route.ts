@@ -11,7 +11,6 @@ import { CastType, Message } from "@farcaster/core";  // for encoding
 import { de } from "zod/v4/locales";
 import { get } from "http";
 import { getAppEd25519Signer, getSponsorSigner } from "@/lib/signers";
-import { addCast } from "@/lib/cast-store"
 
 const HUB_URL = "https://hub.pinata.cloud";  // or another Farcaster Hub
 const BuyEvent = parseAbiItem(
@@ -134,12 +133,6 @@ export async function POST(req: Request) {
 
         // TODO: validate text according to castType
         const json = await createCast(text, fid, signer)
-
-        try {
-            addCast({ fid, text, hubResponse: json })
-        } catch (e) {
-            console.warn('Failed to record cast in memory store', e)
-        }
 
         //mark as executed on chain? TODO
         await markExecuted(buyEvent.args.nonce)
