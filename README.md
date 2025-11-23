@@ -18,25 +18,28 @@
 ## Miniapp
 
 ### User join
-- [ ] Set ad price
-- [ ] check add types (roast, shill etc...)
-- [ ] Send signer request to backend
+- [ ] Input for ad price
+- [ ] Input for ad type (roast, shill etc...)
+- [ ] Send signer request to backend with ad price + ad type + user fid
 - [ ] Ask user to complete signer request (qr code)
 - [ ] poll for signing request status
-- [ ] Once request is signed user executes on chain tx to write price+fid+types to a smart contract
+- [ ] Once request is signed show success to user
 
 ### See list of ad spaces
-- [ ] List of profiles + ad price + supported ad types
-- [ ] Buy buttons per profile (roast cost X, shill cost Z)
-- [ ] do an erc677 tx using G$ to smart contract - encoded function call: buy(fid,type,texthash)
-- [ ] once tx is success: send backend signed request with text of cast
+- [ ] Read from smart contract (getSpaces method) List of profiles + ad price + ad type
+- [ ] Show links to the user profiles (can we use fid or we need the handle)
+- [ ] Buy button per ad space
+- [ ] on buy:
+      - [ ] ask user for ad text 
+      - [ ] do an erc677 tx using G$ to smart contract - encoded function call: buy(fid,type,texthash)
+      - [ ] once tx is success: send backend (/api/cast) signed request with text of cast
 
 ## Nice to have
 - Page with recent posts
 - Earning reports
   
 ## Smart contract
-https://celoscan.io//address/0xff1dd185a7b6463ac94dF0f92F279774B43DcD8c#readContract
+https://celoscan.io//address/0x3DC6FFB220397b2F342a52dF92136edb5a4850c6#readContract
 
 
 
