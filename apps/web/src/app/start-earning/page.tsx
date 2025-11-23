@@ -4,18 +4,10 @@ import { useMiniApp } from "@/contexts/miniapp-context";
 import { useState, useEffect, useRef } from "react"
 import QRCode from 'react-qr-code';
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
+import { Card } from '@/components/ui/card'
 
-function StatusBadge({ state }: { state: string | null }) {
-  if (!state) return null
-  const map: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    approved: 'bg-green-100 text-green-800',
-    completed: 'bg-green-100 text-green-800',
-    rejected: 'bg-red-100 text-red-800',
-  }
-  const cls = map[state] || 'bg-gray-100 text-gray-800'
-  return <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${cls}`}>{state}</span>
-}
+// helper to render small status badge
 
 export default function StartEarningPage() {
   const [loading, setLoading] = useState(false)
@@ -30,32 +22,37 @@ export default function StartEarningPage() {
   const [signedRequest, setSignedRequest] = useState<any | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   
-  const [types, setTypes] = useState<Array<{ id: string; name: string; price: string; policy: string }>>([])
+  
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('farkee_commission_types')
-      if (raw) setTypes(JSON.parse(raw))
-    } catch {
-      // ignore
-    }
-  }, [])
+  const router = useRouter()
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('farkee_commission_types', JSON.stringify(types))
-    } catch {
-      // ignore
-    }
-  }, [types])
+  // preset defaults if none exist
+  const PRESET_TYPES = [
+    { id: 'preset-1', name: 'Roast Me', price: '5 G$', policy: 'Short roast, no personal threats' },
+    { id: 'preset-2', name: 'Shilling', price: '3 G$', policy: 'Promote one token/URL, no spam' },
+    { id: 'preset-3', name: 'Sponsor', price: '10 G$', policy: 'Longer sponsor message, includes link' },
+    { id: 'preset-4', name: 'Q/A Shoutout', price: '4 G$', policy: 'Answer a question or shout a user' },
+  ]
 
-  const addType = () => {
-    setTypes((t) => [...t, { id: String(Date.now()), name: 'Roast Me', price: '5 G$', policy: 'No personal info; fun roasts only' }])
+  const displayedTypes = PRESET_TYPES
+
+  const selectType = (t: { id: string; name: string; price: string; policy: string }) => {
+    // navigate to create flow with type info in query
+    const qs = `?type=${encodeURIComponent(t.name)}&policy=${encodeURIComponent(t.policy)}`
+    router.push(`/start-earning/create${qs}`)
   }
-  const updateType = (id: string, patch: Partial<{ name: string; price: string; policy: string }>) => {
-    setTypes((t) => t.map((x) => (x.id === id ? { ...x, ...patch } : x)))
+
+  const renderStatusBadge = (s: string | null) => {
+    if (!s) return null
+    const map: Record<string, string> = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      approved: 'bg-green-100 text-green-800',
+      completed: 'bg-green-100 text-green-800',
+      rejected: 'bg-red-100 text-red-800',
+    }
+    const cls = map[s] || 'bg-gray-100 text-gray-800'
+    return <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${cls}`}>{s}</span>
   }
-  const removeType = (id: string) => setTypes((t) => t.filter((x) => x.id !== id))
 
   console.log({context})
   useEffect(() => {
@@ -160,39 +157,17 @@ export default function StartEarningPage() {
         <p className="mb-4 text-muted-foreground">Create a Farcaster signer so your app can post on behalf of the user.</p>
 
         <div className="space-y-4">
-          <div className="p-4 border rounded">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-sm font-semibold">Commission Types</h3>
-                <div className="text-xs text-muted-foreground">Define the slots you want to sell (name, price, policy).</div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => { setTypes([]); localStorage.removeItem('farkee_commission_types') }}>Reset</Button>
-                <Button size="sm" onClick={addType}>Add Type</Button>
-              </div>
-            </div>
-
-            {types.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No commission types defined. Click "Add Type" to create one.</div>
-            ) : (
-              <div className="space-y-3">
-                {types.map((t) => (
-                  <div key={t.id} className="grid gap-2 md:grid-cols-3 items-start">
-                    <input className="w-full border px-2 py-1 rounded" value={t.name} onChange={(e) => updateType(t.id, { name: e.target.value })} />
-                    <input className="w-full border px-2 py-1 rounded" value={t.price} onChange={(e) => updateType(t.id, { price: e.target.value })} />
-                    <div className="flex items-center gap-2">
-                      <input className="w-full border px-2 py-1 rounded" value={t.policy} onChange={(e) => updateType(t.id, { policy: e.target.value })} />
-                      <button className="text-sm text-red-600" onClick={() => removeType(t.id)}>Remove</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="mt-4">
-              <Button onClick={createSignedKeyRequest} disabled={loading}>{loading ? 'Creating...' : 'Create Signer Request'}</Button>
-            </div>
+          {/* Selection grid: choose a preset or your defined commission type */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-4">
+            {displayedTypes.map((t) => (
+              <Card key={t.id} className="p-4 cursor-pointer hover:shadow-md" onClick={() => selectType(t)}>
+                <div className="font-semibold">{t.name}</div>
+                <div className="text-sm text-muted-foreground">{t.policy}</div>
+                <div className="mt-2 font-medium">{t.price}</div>
+              </Card>
+            ))}
           </div>
+          {/* Removed commission-editing UI per request; presets are displayed above for selection. */}
 
           {errorMsg && (
             <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">{errorMsg}</div>
@@ -203,7 +178,7 @@ export default function StartEarningPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="text-sm font-medium">Status</div>
-                  <StatusBadge state={state} />
+                  {renderStatusBadge(state)}
                 </div>
                 <div className="flex items-center gap-2">
                   <button className="text-sm text-muted-foreground" onClick={() => copy(signedRequest.deeplinkUrl)}>Copy Deeplink</button>
