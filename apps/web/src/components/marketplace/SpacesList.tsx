@@ -15,23 +15,28 @@ export function SpacesList() {
   const [selected, setSelected] = useState<any | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
+  if (SAMPLE_SPACES.length === 0) {
+    return <div className="text-center text-muted-foreground">No spaces available</div>
+  }
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {SAMPLE_SPACES.map((s) => (
         <Card key={s.fid} className="p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-sm text-muted-foreground">Owner</div>
               <div className="font-medium">{s.owner}</div>
+              <div className="mt-2 text-xs inline-block px-2 py-1 rounded bg-gray-100 text-xs">Type: {s.type}</div>
             </div>
+
             <div className="text-right">
               <div className="text-sm text-muted-foreground">Price</div>
-              <div className="font-medium">{s.price}</div>
+              <div className="font-semibold text-lg">{s.price}</div>
+              <div className="mt-3">
+                <Button size="sm" onClick={() => setSelected(s)}>Buy</Button>
+              </div>
             </div>
-          </div>
-          <div className="mt-3 flex items-center justify-between">
-            <div className="text-sm">Type: {s.type}</div>
-            <Button size="sm" onClick={() => setSelected(s)}>Buy</Button>
           </div>
         </Card>
       ))}

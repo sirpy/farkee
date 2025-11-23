@@ -17,17 +17,24 @@ const SIGNED_KEY_REQUEST_TYPE = [
 
 export async function POST(req: Request) {
     try {
-        
-        const APP_FID = process.env.APP_FID
+        const required = [
+            { name: 'APP_FID', value: process.env.APP_FID },
+            { name: 'APP_PKEY', value: process.env.APP_PKEY },
+            { name: 'SPONSOR_PKEY', value: process.env.SPONSOR_PKEY },
+            { name: 'SIGNER_PKEY', value: process.env.SIGNER_PKEY },
+        ]
 
-        if (!APP_FID) {
-            return NextResponse.json({ error: "APP_FID not configured" }, { status: 500 })
+        const missing = required.filter((r) => !r.value).map((r) => r.name)
+        if (missing.length > 0) {
+            return NextResponse.json({ error: 'Missing environment variables', missing }, { status: 500 })
         }
+
+        const APP_FID = process.env.APP_FID as string
 
         const sponsor = getSponsorSigner()
         const account = getAppFidSigner()
 
-        //this should be a secret account from oasis network
+        // this should be a secret account from oasis network
         const key = getAppEd25519SignerPublicAddress()
         
         const until = Date.now() + 24 * 60 * 60 * 1000 // 24 hours
