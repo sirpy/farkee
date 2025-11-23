@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useFarkeeApi } from "@/hooks/use-farkee-api"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
@@ -9,11 +10,25 @@ export function BuyModal({ space, onClose, onSuccess }: { space: any; onClose: (
   const [txHash, setTxHash] = useState<string>("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const api = useFarkeeApi()
 
   const submit = async () => {
     setError(null)
     setLoading(true)
     try {
+      // Try wallet-based purchase via buySpace first. If that fails, fall back to manual txHash submission.
+      try {
+        const fid = Number(space.fid)
+        const price = Number(space.price)
+        const spaceType = Number(space.spaceType ?? space.type ?? 0)
+        const tx = await api.buySpace(fid, price, spaceType, text)
+        onSuccess({ txHash: tx })
+        onClose()
+        return
+      } catch (walletErr) {
+        // wallet flow not available or failed — continue to manual flow
+      }
+
       const res = await fetch('/api/cast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
