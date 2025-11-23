@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 
 import { Navbar } from '@/components/navbar';
+import SignedInHandle from '@/components/signed-in-handle'
 import Providers from "@/components/providers"
 
 const inter = Inter({ subsets: ['latin'] });
@@ -46,13 +47,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        {/* Navbar is included on all pages */}
         <div className="relative flex min-h-screen flex-col">
           <Providers>
-            <Navbar />
+            <SignedInHandle />
             <main className="flex-1">
               {children}
             </main>
+            <Navbar />
           </Providers>
         </div>
       </body>
