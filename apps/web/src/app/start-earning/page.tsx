@@ -163,7 +163,6 @@ export default function StartEarningPage() {
               <Card key={t.id} className="p-4 cursor-pointer hover:shadow-md" onClick={() => selectType(t)}>
                 <div className="font-semibold">{t.name}</div>
                 <div className="text-sm text-muted-foreground">{t.policy}</div>
-                <div className="mt-2 font-medium">{t.price}</div>
               </Card>
             ))}
           </div>
