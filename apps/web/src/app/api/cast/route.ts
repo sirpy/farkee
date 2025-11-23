@@ -85,7 +85,7 @@ const getBuyLogs = async (txHash: `0x${string}`) => {
     const receipt = await publicClient.getTransactionReceipt({ hash: txHash });
     //parse logs to find relevant event
 
-
+    console.log("Receipt logs:", receipt.logs);
     const decoded = receipt.logs.map(log => {
         try {
             return decodeEventLog({
@@ -97,21 +97,22 @@ const getBuyLogs = async (txHash: `0x${string}`) => {
             return null
         }
     }).filter(_ => _ !== null);
+    console.log("Decoded logs:", decoded);
     return decoded[0]
 
 }
 
 const markExecuted = async (nonce: bigint) => {
     const hash = await walletClient.writeContract({
-        address: "0xff1dd185a7b6463ac94dF0f92F279774B43DcD8c",
+        address: process.env.FARKEE_CONTRACT as `0x${string}`,
         abi: methodAbi,
         functionName: "markExecuted",
         args: [nonce],
     })
 
-    console.log(hash)
+    console.log("marking executed:",hash)
     const receipt = await publicClient.waitForTransactionReceipt({ hash })
-    console.log(receipt)
+    console.log("marking executed receipt:",receipt)
     return hash
 }
 
